@@ -2,14 +2,26 @@ import React, { useEffect } from 'react'
 import { useState } from 'react'
 import { dummyPublishedImages } from '../assets/assets'
 import Loading from './Loading'
+import { useAppContext } from '../context/AppContext'
+import toast from 'react-hot-toast'
 
 function Community() {
 
   const [images, setImages] = useState([])
   const [loading, setLoading] = useState(true)
-
+  const {axios, token} = useAppContext()
+  console.log(token);
   const fetchImages = async() => {
-    setImages(dummyPublishedImages)
+    try {
+      const{ data } = await axios.get('/api/user/published-images',{headers: {Authorization: token}})
+      if (data.success) {
+        setImages(data?.images)
+      }else{
+        toast.error(data.message)
+      }
+    } catch (error) {
+      toast.error(error.message)
+    }
     setLoading(false)
   }
 
@@ -23,7 +35,7 @@ function Community() {
     <div className='p-6 pt-12 xl:px-12 2xl:px-20 w-full mx-auto h-full overflow-y-scroll'>
       <h2 className='text-xl font-semibold mb-6 text-gray-800 dark:text-purple-100'>Community Images</h2>
       
-      {images.length>0 ? (
+      {images?.length>0 ? (
         <div className='flex flex-wrap max-sm:justify-center gap-5'>
             {images.map((item, index)=> (
               <a key={index} href={item.imageUrl} target='_blank' className='relative group block rounded-lg overflow-hidden border border-gray-200 dark:border-purple-700 shadow-sm hover:shadow-md transition-shadow duration-300'>
