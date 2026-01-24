@@ -10,12 +10,12 @@ function Community() {
   const [images, setImages] = useState([])
   const [loading, setLoading] = useState(true)
   const {axios, token} = useAppContext()
-  console.log(token);
   const fetchImages = async() => {
     try {
       const{ data } = await axios.get('/api/user/published-images',{headers: {Authorization: token}})
+      
       if (data.success) {
-        setImages(data?.images)
+        setImages(data?.image)
       }else{
         toast.error(data.message)
       }
