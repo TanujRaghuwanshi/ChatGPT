@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { dummyChats, dummyUserData } from "../assets/assets";
+
 import axios from 'axios';
 import toast from "react-hot-toast";
 
@@ -33,27 +33,38 @@ export const AppContextProvider = ({children})=>{
             }
         }
 
-        const createNewChat = async()=>{
+        const createNewChat = async(shouldFetch = true)=>{
             try {
                 if (!user) {
                     return toast('Login to create a new chat')
                 }
                 navigate('/')
-                await axios.get('/api/chat/create', {headers: {Authorization: token}})
-                await fetchUserChats()
+                const {data} = await axios.post('/api/chat/create', {}, {headers: {Authorization: token}})
+                
+                if (data.success) {
+                    if (shouldFetch) {
+                        await fetchUserChats()
+                    }
+                } else {
+                    toast.error(data.message)
+                }
             } catch (error) {
                 toast.error(error.message)
             }
         }
 
-        const fetchUserChats = async () => {
+        const fetchUserChats = async (retryCount = 0) => {
             try {
                const {data} = await axios.get('/api/chat/get', {headers: {Authorization: token}})
                if (data.success) {
                 setChats(data.chats)
                 if (data.chats.length === 0) {
-                    await createNewChat();
-                    return fetchUserChats();
+                    if (retryCount < 3) {
+                         await createNewChat(false);
+                         return fetchUserChats(retryCount + 1);
+                    } else {
+                        toast.error("Failed to create new chat after multiple attempts");
+                    }
                 }else{
                     setSelectChat(data.chats[0])
                 }
@@ -102,4 +113,5 @@ export const AppContextProvider = ({children})=>{
         )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAppContext = ()=> useContext(AppContext)

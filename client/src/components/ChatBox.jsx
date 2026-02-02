@@ -27,7 +27,9 @@ function ChatBox() {
         setPrompt('')
         setmessages(prev => [...prev, {role: 'user', content: prompt, timestamp: Date.now(), isImage: false}])
 
+        console.log("ChatBox: Sending request with token:", token);
         const { data} = await axios.post(`/api/message/${mode}`, {chatId: selectChat._id, prompt, isPublished}, {headers: {Authorization: token}})
+        console.log(data.message)
 
         if (data.success) {
           setmessages(prev => [...prev, data.reply])
@@ -38,12 +40,18 @@ function ChatBox() {
              setUser(prev=>({...prev, credits: prev.credits -1}))
           }
         }else{
-          toast.error(data.messages)
+          toast.error(data.message)
           setPrompt(promptCopy)
         }
 
     } catch (error) {
-      toast.error(error.messages)
+       console.log("ChatBox Error:", error);
+       if (error.response) {
+           console.log("Error Response:", error.response.status, error.response.data);
+           toast.error(`Error ${error.response.status}: ${error.response.data.message || error.message}`);
+       } else {
+           toast.error(error.message);
+       }
     }finally{
       setPrompt('')
       setLoading(false)

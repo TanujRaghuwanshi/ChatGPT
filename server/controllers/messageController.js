@@ -9,9 +9,17 @@ import imageKit from "../configs/imagekit.js";
 export const textMessageController = async (req, res) => {
   try {
     const userId = req.user._id;
-     if (req.user.credits < 1) {
+    console.log("TextMessageController: User ID:", userId);
+
+    const creditResult = await User.findOneAndUpdate(
+       { _id: userId, credits: { $gte: 1 } },
+       { $inc: { credits: -1 } }
+    );
+    console.log("TextMessageController: Credit deduction result:", creditResult ? "Success" : "Failed");
+     if (!creditResult) {
             return res.json({success: false, message: "You don't have enough credits to use this feature"})
         }
+
     const { chatId, prompt } = req.body;
 
     const chat = await Chat.findOne({ userId, _id: chatId });
@@ -22,8 +30,11 @@ export const textMessageController = async (req, res) => {
       timestamp: Date.now(),
       isImage: false,
     });
-
+    
+    console.log("TextMessageController: Calling OpenAI...");
     const {choices} = await openai.chat.completions.create({
+
+
       model: "gemini-2.5-flash",
       messages: [
         {
@@ -34,14 +45,17 @@ export const textMessageController = async (req, res) => {
     });
 
     const reply = {...choices[0].message, timestamp: Date.now(),isImage: false}
+    console.log("TextMessageController: OpenAI response received. Sending reply.");
      
     res.json({success: true, reply})
 
     chat.messages.push(reply)
     await chat.save()
-    await User.updateOne({_id: userId}, {$inc: {credits: -1}})
+    // await User.updateOne({_id: userId}, {$inc: {credits: -1}}) // Removed, done at start
 
   } catch (error) {
+    await User.updateOne({_id: req.user._id}, {$inc: {credits: 1}}); // Refund
+    console.log("TextMessageController: Error caught:", error.message);
     res.json({success: false, message: error.message})
   }
 };
@@ -52,9 +66,15 @@ export const textMessageController = async (req, res) => {
 export const imageMessageController = async (req, res) => {
     try {
         const userId = req.user._id;
-        if (req.user.credits < 2) {
-            return res.json({success: false, message: "You don't have enough credits to use this feature"})
-        }
+        
+        const creditResult = await User.findOneAndUpdate(
+            { _id: userId, credits: { $gte: 2 } },
+            { $inc: { credits: -2 } }
+         );
+    
+         if (!creditResult) {
+             return res.json({success: false, message: "You don't have enough credits to use this feature"})
+         }
 
         const {prompt, chatId, isPublished} = req.body
 
@@ -90,10 +110,11 @@ export const imageMessageController = async (req, res) => {
 
         chat.messages.push(reply)
         await chat.save()
-        await User.updateOne({_id: userId}, {$inc: {credits: -2}})
+        // await User.updateOne({_id: userId}, {$inc: {credits: -2}}) // Removed, done at start
 
 
     } catch (error) {
+        await User.updateOne({_id: req.user._id}, {$inc: {credits: 2}}); // Refund
         res.json({success: false, message: error.message})
     }
 }

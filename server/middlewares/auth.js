@@ -4,9 +4,11 @@ import User from '../models/User.js';
 
 export const protect = async(req, res, next) =>{
     let token = req.headers.authorization;
+    console.log("Auth Middleware Entry: Token received:", token);
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET)
+        console.log("Auth Middleware: Token verified, User ID:", decoded.id);
         const userId = decoded.id;
 
         const user = await User.findById(userId)
