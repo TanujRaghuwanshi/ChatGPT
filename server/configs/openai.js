@@ -1,8 +1,9 @@
 
 import {OpenAI} from "openai";
+import 'dotenv/config';
 
 const openai = new OpenAI({
-    apiKey: "AIzaSyCoN8ytUQR8TVp1zFMxePOXvz83UZu2ev0",
+    apiKey: process.env.MONGODB_URI,
     baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/"
 });
 
