@@ -9,13 +9,11 @@ import imageKit from "../configs/imagekit.js";
 export const textMessageController = async (req, res) => {
   try {
     const userId = req.user._id;
-    console.log("TextMessageController: User ID:", userId);
 
     const creditResult = await User.findOneAndUpdate(
        { _id: userId, credits: { $gte: 1 } },
        { $inc: { credits: -1 } }
     );
-    console.log("TextMessageController: Credit deduction result:", creditResult ? "Success" : "Failed");
      if (!creditResult) {
             return res.json({success: false, message: "You don't have enough credits to use this feature"})
         }
@@ -31,10 +29,7 @@ export const textMessageController = async (req, res) => {
       isImage: false,
     });
     
-    console.log("TextMessageController: Calling OpenAI...");
     const {choices} = await openai.chat.completions.create({
-
-
       model: "gemini-2.5-flash",
       messages: [
         {
@@ -45,7 +40,6 @@ export const textMessageController = async (req, res) => {
     });
 
     const reply = {...choices[0].message, timestamp: Date.now(),isImage: false}
-    console.log("TextMessageController: OpenAI response received. Sending reply.");
      
     res.json({success: true, reply})
 
@@ -55,7 +49,6 @@ export const textMessageController = async (req, res) => {
 
   } catch (error) {
     await User.updateOne({_id: req.user._id}, {$inc: {credits: 1}}); // Refund
-    console.log("TextMessageController: Error caught:", error.message);
     res.json({success: false, message: error.message})
   }
 };

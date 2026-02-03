@@ -4,21 +4,23 @@ import User from '../models/User.js';
 
 export const protect = async(req, res, next) =>{
     let token = req.headers.authorization;
-    console.log("Auth Middleware Entry: Token received:", token);
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET)
-        console.log("Auth Middleware: Token verified, User ID:", decoded.id);
-        const userId = decoded.id;
 
-        const user = await User.findById(userId)
+        if (decoded.id) {
+             const userId = decoded.id;
+             const user = await User.findById(userId)
 
-        if (!user) {
-           return res.json({success: false, message: "Not authorized, user not found" })
+             if (!user) {
+                return res.json({success: false, message: "Not authorized, user not found" })
+             }
+
+             req.user = user;
+             next()
+        }else{
+             return res.json({success: false, message: "Not authorized, login again" })
         }
-
-        req.user = user;
-        next()
     } catch (error) {
         res.status(401).json({message: "Not authorized, token failed"})
     }
