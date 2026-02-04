@@ -12,7 +12,10 @@
   font-family: "Playfair Display", serif;
 }
 @theme{
-  --color-primary: #e6ccff;
+  --color-primary: #FF9644;
+  --color-secondary: #FFCE99;
+  --color-bg-dark: #562F00;
+  --color-bg-light: #FFFDF1;
 }
 ::-webkit-scrollbar{
   display: none;

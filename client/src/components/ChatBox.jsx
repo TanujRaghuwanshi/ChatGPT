@@ -27,9 +27,7 @@ function ChatBox() {
         setPrompt('')
         setmessages(prev => [...prev, {role: 'user', content: prompt, timestamp: Date.now(), isImage: false}])
 
-        console.log("ChatBox: Sending request with token:", token);
         const { data} = await axios.post(`/api/message/${mode}`, {chatId: selectChat._id, prompt, isPublished}, {headers: {Authorization: token}})
-        console.log(data.message)
 
         if (data.success) {
           setmessages(prev => [...prev, data.reply])
@@ -45,13 +43,7 @@ function ChatBox() {
         }
 
     } catch (error) {
-       console.log("ChatBox Error:", error);
-       if (error.response) {
-           console.log("Error Response:", error.response.status, error.response.data);
-           toast.error(`Error ${error.response.status}: ${error.response.data.message || error.message}`);
-       } else {
-           toast.error(error.message);
-       }
+       toast.error(error.message)
     }finally{
       setPrompt('')
       setLoading(false)
@@ -83,7 +75,7 @@ function ChatBox() {
           {messages.length===0 && (
             <div className='h-full flex flex-col items-center justify-center gap-2 text-primary'>
               <img src={theme ==='dark' ? assets.logo_full : assets.logo_full_dark} className='w-full max-w-56 sm:max-w-68' alt="" />
-              <p className='mt-5 text-4xl sm:text-6xl text-center text-gray-400 dark:text-white'>Ask me anything</p>
+              <p className='mt-5 text-4xl sm:text-6xl text-center text-[#562F00]/30 dark:text-white/30'>Ask me anything</p>
             </div>
           )}
 
@@ -108,12 +100,12 @@ function ChatBox() {
 
     {/* Prompt Input Box */}
 
-    <form onSubmit={onSubmit} className='bg-primary/20 dark:bg-[#583C79]/30 border border-primary dark:border-[#80609F]/30 rounded-full w-full max-w-2xl p-3 pl-4 mx-auto flex gap-4 items-center'>
-       <select onChange={(e)=>setMode(e.target.value)} value={mode} className='text-sm pl-3 pr-2 outline-none'>
-        <option className='dark:bg-purple-900' value="text">Text</option>
-        <option className='dark:bg-purple-900' value="image">Image</option>
+    <form onSubmit={onSubmit} className='bg-[#FFCE99]/20 dark:bg-[#FF9644]/20 border border-[#FFCE99] dark:border-[#FF9644]/30 rounded-full w-full max-w-2xl p-3 pl-4 mx-auto flex gap-4 items-center'>
+       <select onChange={(e)=>setMode(e.target.value)} value={mode} className='text-sm pl-3 pr-2 outline-none dark:bg-transparent dark:text-[#FFFDF1] text-[#562F00]'>
+        <option className='bg-[#FFFDF1] dark:bg-[#562F00] text-[#562F00] dark:text-[#FFFDF1]' value="text">Text</option>
+        <option className='bg-[#FFFDF1] dark:bg-[#562F00] text-[#562F00] dark:text-[#FFFDF1]' value="image">Image</option>
        </select>
-       <input onChange={(e)=> setPrompt(e.target.value)} value={prompt} type="text" placeholder='Type your prompt here...' className='flex-1 w-full text-sm outline-none' required />
+       <input onChange={(e)=> setPrompt(e.target.value)} value={prompt} type="text" placeholder='Type your prompt here...' className='flex-1 w-full text-sm outline-none bg-transparent placeholder:text-[#562F00]/50 dark:placeholder:text-[#FFFDF1]/50 text-[#562F00] dark:text-[#FFFDF1]' required />
        <button disabled={loading}>
         <img src={loading? assets.stop_icon:assets.send_icon} className='cursor-pointer w-8' alt="" />
        </button>
